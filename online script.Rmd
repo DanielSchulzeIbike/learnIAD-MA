@@ -1,0 +1,352 @@
+---
+title: "Individual animal data meta-analysis: R course"
+author: "Daniel Schulze & Alexandra Banach-Brown"
+output:
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+date: ""
+---
+
+## Welcome!
+
+Welcome to our tutorial on how to run individual animal data meta-analysis!
+(We will use the abbreviation IAD-MA in the future.)
+
+Click the video below for the first part of the introduction.
+
+<video width="852" height="480" controls>
+  <source src="www/Welcome1.mp4" type="video/mp4">
+</video>
+
+
+```{r setup, echo = F}
+knitr::opts_chunk$set(echo = T)
+
+pacman::p_load(dplyr, 
+               knitr,
+               metafor,
+               survival,     # survival models
+               survminer,    # displaying adjusted survival curves
+               lmerTest,     # classic mixed models (aka multi-level)
+               brms,         # Bayesian (mixed) models
+               mice,         # multiple imputation
+               zoo,
+               ggplot2,
+               ggborderline, # enhance borders in plots
+               gtsummary, 
+               ggpubr,
+               learnr)
+
+setwd("S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr")
+
+DatIAD <- readRDS("IADdata.Rds") # load data
+
+# Reshaping data to long format (needed later for longitudinal mixed modeling):
+DatIAD_long <- data.frame(stack(DatIAD[c("NSSPre.MCAO..BL.", 
+                                         "NSS24h.post",
+                                         "NSS72h.post",
+                                         "NSS7d.post",
+                                         "NSS14d.post")]),
+                          rep(DatIAD$ID, 5),
+                          rep(DatIAD$Study, 5),
+                          rep(DatIAD$treatment, 5),
+                          rep(DatIAD$Attrition.Day, 5),
+                          rep(DatIAD$CageID, 5),
+                          rep(c(0, 1, 3, 7, 14), each = nrow(DatIAD)))
+colnames(DatIAD_long) <- c("NSS", "indicator", "ID", "Study", "Treatment", 
+                           "AttritionDay", "CageID", "day")
+DatIAD_long$Treatment <- relevel(as.factor(DatIAD_long$Treatment), "MCAO-control")
+DatIAD_long$NSS <- as.numeric(DatIAD_long$NSS)
+
+
+NSSpost_1 <- lm(NSS7d.post ~ treatment, 
+                  data = DatIAD[DatIAD$Study == "Berlin19", ])
+NSSpost_2 <- lm(NSS7d.post ~ treatment, 
+                  data = DatIAD[DatIAD$Study == "Hav19", ])
+NSSpost_3 <- lm(NSS7d.post ~ treatment, 
+                  data = DatIAD[DatIAD$Study == "Hav20AGED", ])
+NSSpost_4 <- lm(NSS7d.post ~ treatment, 
+                  data = DatIAD[DatIAD$Study == "Hav20STZ", ])
+mean_post <- c(summary(NSSpost_1)$coefficients[2,1], # extract specific estimate: mean diff JM20 vs MCAO-control
+               summary(NSSpost_2)$coefficients[2,1],
+               summary(NSSpost_3)$coefficients[2,1],
+               summary(NSSpost_4)$coefficients[2,1])
+se_mean_post <- c(summary(NSSpost_1)$coefficients[2,2],
+                  summary(NSSpost_2)$coefficients[2,2],
+                  summary(NSSpost_3)$coefficients[2,2],
+                  summary(NSSpost_4)$coefficients[2,2])
+mean_post_ma <- rma(yi = mean_post,
+                    sei = se_mean_post)
+```
+
+## Data
+
+Before heading into the main topic, let us introduce our working example. Click the video below to learn about it or read the summary below.
+
+<video width="852" height="480" controls>
+  <source src="www/Data1.mp4" type="video/mp4">
+</video>
+
+This data set is taken from a publication by Ramirez-Sanchez et al. (2024) on the efficacy of a new drug (JM-20) on treating ischemic stroke. The data comprises 4 experiments in different locations and with different species, age groups, and comorbidity. Three groups are part of each experiment: Sham (no actual stroke applied), MCAO (control, with stroke but no treatment), JM20 (stroke and treatment). Outcome was the Neuroscore (NSS) measuring motor skill impairment.  
+Data: https://zenodo.org/records/10689055  
+Preprint: https://www.biorxiv.org/content/10.1101/2024.03.08.584085v1
+
+
+```{r data_load, echo=TRUE, message=FALSE, warning=FALSE}
+
+DatIAD <- readRDS("IADdata.Rds") # load data
+
+```
+
+
+__*Exercise:*__  
+Let's head into practicing. Display the first rows of data set by extending the line of R code below.
+
+```{r first_ex, exercise=TRUE}
+head()
+```
+
+
+## Data reshape
+
+For IAD-MA, data has to be present in the so-called long format. "Long" refers to stacking data from all studies on top of each other with an additional column indicating the source.
+
+This is achieved by the following code:
+
+```{r data_reshpe, echo=TRUE, message=FALSE, warning=FALSE}
+
+# Reshaping data to long format (needed later for longitudinal mixed modeling):
+DatIAD_long <- data.frame(stack(DatIAD[c("NSSPre.MCAO..BL.", 
+                                         "NSS24h.post",
+                                         "NSS72h.post",
+                                         "NSS7d.post",
+                                         "NSS14d.post")]),
+                          rep(DatIAD$ID, 5),
+                          rep(DatIAD$Study, 5),
+                          rep(DatIAD$treatment, 5),
+                          rep(DatIAD$Attrition.Day, 5),
+                          rep(DatIAD$CageID, 5),
+                          rep(c(0, 1, 3, 7, 14), each = nrow(DatIAD)))
+colnames(DatIAD_long) <- c("NSS", "indicator", "ID", "Study", "Treatment", 
+                           "AttritionDay", "CageID", "day")
+DatIAD_long$Treatment <- relevel(as.factor(DatIAD_long$Treatment), "MCAO-control") # set control category as reference in R
+DatIAD_long$NSS <- as.numeric(DatIAD_long$NSS) # force neuroscore data to be numbers
+
+```
+
+__*Exercise:*__  
+Again, display the first rows of the long format data set. Observe the difference to before.
+
+```{r datLong_ex, exercise=TRUE}
+head()
+```
+
+
+
+## Plotting of longitudinal data
+
+Next, we would like to plot the longitudinal data we have. In ggplot (a common plotting tool in R), this can look like this (this code and the plot it is giving is merely supposed to familiarize yourself with the data. You don't have to understand the code unless you want to learn some ggplot):
+
+```{r Plotting of longitudinal data - spaghetti plot, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(data = DatIAD_long, aes(x = day, 
+                               y = NSS, 
+                               group = factor(ID),
+                               color = Treatment)) +
+  geom_line(size=0.5, show.legend = FALSE, alpha=0.4) +  # add individual mice trajectory
+  stat_smooth(aes(group = Treatment), size=2.5, se=F, span = 1) + # add general trend per group
+  labs(colour = "Treatment") + ylab("NSS") + xlab("Time in days") +
+  scale_x_continuous(breaks = c(0, 1, 3, 7, 14)) +
+  geom_point(aes(x = AttritionDay), alpha = 0.4, shape = 25) # add attrition as triangles
+```
+
+PLot description:  
+There measurements in the outcome NSS taken before stroke (0), at the day of stroke (1), and at day 3, 7, and 14 afterwards.  
+Thick lines are smoothed general trends per group.  
+Thin lines are individual mouse trajectories. (until their death).  
+Triangles mark the day of death, if a mouse died.
+
+
+
+## IAD: Theory
+
+Click the video below for a presentation of basic concepts of IAD-MA.
+
+<video width="852" height="480" controls>
+  <source src="www/Medien1.mp4" type="video/mp4">
+</video>
+
+For the following exercises we will cycle through a repeating pattern of two-stage and single-stage analyses. We will exchange the outcome variable in order to illustrate the programming differences, but the general steps always remain the same.  
+
+__We will look at these outcomes__ [analysis type]:  
+- post neuro score [linear regression]  
+- pre-post difference [linear regression]  
+- mortality: yes/no [logistic regression]  
+- mortality: time [survival analysis: Cox regression]  
+- meta-regression with IAD
+
+
+
+## Post score: Two stage analysis (Step 1)
+
+### Step 1: Linear regression (ANOVA-type model)
+
+So you have learned about the two stage procedure in IAD-MA. Let's build it up by first running a single-study regression model for study "Berlin19". In R, this always looks like this:
+
+```{r Linear regression model, echo=TRUE, message=FALSE, warning=FALSE}
+
+# Study 1
+NSSpost_1 <- lm(NSS7d.post ~ treatment, 
+                  data = DatIAD[DatIAD$Study == "Berlin19", ])
+summary(NSSpost_1)
+```
+
+Comment: The [] operator selects stuff from a data set. It always takes the form [cases, variables], ie., you can select cases with a statement before the comma, and specific variables with a statement after it. Here we want to select the mice from the Berlin19 study, and we have no desire to select any specific variables (thus, the spot after the comma remains empty).  
+
+Results:
+Comparing untreated MCAO and sham: Significantly lower impairment (NSS) for sham (-4.52, p < .001).  
+Comparing untreated MCAO and JM-20: No significant differences (1.00, p = .106).
+
+
+_**Exercise:**_  
+Before doing the same for the other 3 studies, first find their labels from the data frame (hint: variable is labeled "Study"):
+
+```{r studyName_ex, exercise=TRUE}
+table(DatIAD$)
+```
+
+```{r studyName_ex-solution}
+table(DatIAD$Study)
+```
+
+_**Exercise:**_  
+Run regressions for the other 3 studies by extending the code. Summarize the results for yourself like we did above.
+
+```{r regression_ex, exercise=TRUE}
+
+NSSpost_2 <- lm()
+summary(NSSpost_2)
+
+NSSpost_3 <- lm()
+summary(NSSpost_3)
+
+NSSpost_4 <- lm()
+summary(NSSpost_4)
+
+```
+
+```{r regression_ex-solution}
+
+NSSpost_2 <- lm(NSS7d.post ~ treatment, 
+                  data = DatIAD[DatIAD$Study == "Hav19", ])
+summary(NSSpost_2)
+
+NSSpost_3 <- lm(NSS7d.post ~ treatment, 
+                  data = DatIAD[DatIAD$Study == "Hav20AGED", ])
+summary(NSSpost_3)
+
+NSSpost_4 <- lm(NSS7d.post ~ treatment, 
+                  data = DatIAD[DatIAD$Study == "Hav20STZ", ])
+summary(NSSpost_4)
+
+```
+
+Comparing untreated MCAO and sham: Significantly lower impairment (NSS) for sham in all studies.  
+Comparing untreated MCAO and JM-20: No significant differences but in a single study (Hav19).
+
+
+
+## Post score: Two stage analysis (Step 2)
+
+### Meta-analysis of post NSS
+
+We now need to gather the results from the separate regression models, ie, their coefficients. We can simply create a new object in R that contains these results.
+
+__*Exercise:*__  
+Complete the listings of four numbers each from the previous regressions. Remember, meta-analysis always needs an effect-measure __and__ a measure of uncertainty (called standard error, SE, or variance):
+
+```{r gatherEffectsNaive, exercise=TRUE}
+mean_post <- c(1, -7.125, , )
+se_mean_post <- c(0.61, 1.74, , )
+```
+
+```{r gatherEffectsNaive-solution}
+mean_post <- c(1, -7.125, -2.26, 0.18)
+se_mean_post <- c(0.61, 1.74, 2.17, 1.02)
+```
+
+
+We could also do this more efficient, where we would need no copy paste:
+
+```{r gather effects, echo=TRUE, message=FALSE, warning=FALSE}
+
+mean_post <- c(summary(NSSpost_1)$coefficients[2,1], # extract specific estimate: mean diff JM20 vs MCAO-control
+               summary(NSSpost_2)$coefficients[2,1],
+               summary(NSSpost_3)$coefficients[2,1],
+               summary(NSSpost_4)$coefficients[2,1])
+se_mean_post <- c(summary(NSSpost_1)$coefficients[2,2],
+                  summary(NSSpost_2)$coefficients[2,2],
+                  summary(NSSpost_3)$coefficients[2,2],
+                  summary(NSSpost_4)$coefficients[2,2])
+```
+
+
+__*Exercise:*__  
+
+You are now ready to conduct the second step, the meta-analysis itself. metafor uses a simple command called rma(), which takes the listed results from above. It calls the effects "y" and theLook at the output of this analysis, and forward to a (default) forest plot.
+
+```{r twoStepMA, exercise=TRUE}
+
+mean_post_ma <- rma(yi = ,
+                    sei = )
+summary()
+
+forest(,
+       slab = c("Berlin19", "Hav19", "Hav20AGED", "Hav20STZ"),
+       xlab = "mean difference NSS after 7d")
+
+```
+
+Aggregated effect mean difference in NSS at day 7: -1.80, ie. slightly lower NSS in JM-20 group than in untreated MCAO control. Non-significant.
+
+
+
+## Post score: Single stage analysis
+
+For a single stage analysis, we need to run a mixed model. ###!
+
+
+__*Exercise:*__  
+
+```{r Linear Mixed effect model for all studies - post NSS, echo=TRUE}
+
+NSSpost_lmm <- lmer(NSS7d.post ~ treatment + (1 | Study), 
+                    data = DatIAD)
+summary(NSSpost_lmm)
+```
+Aggregated effect mean difference in NSS at day 7: -1.90, ie. slightly lower NSS in JM-20 group than in untreated MCAO control. Significant (p=.008).  
+The intercept (mean post NSS in untreated MCAO) varies slightly between studies (intercept = 10.2806, SD = 1.497; SD is way lower than the intercept).
+
+
+__Linear regression as linear mixed effect model (aka multi-level model): random-intercept, *random*-slope__
+
+```{r Linear Mixed effect model for all studies - post NSS - random slope, echo=TRUE}
+
+NSSpost_lmm2 <- lmer(NSS7d.post ~ treatment + (treatment|Study),  
+                     data = DatIAD)
+# throws a warning ("is singular"). Lets ignore this for now, we will come back later to these issues
+summary(NSSpost_lmm2)
+anova(NSSpost_lmm, NSSpost_lmm2)
+```
+Aggregated effect mean difference in NSS at day 7: -2.13, ie. slightly lower NSS in JM-20 group than in untreated MCAO control. Non-significant.  
+The intercept (mean post NSS in untreated MCAO) varies somewhat between studies (intercept = 10.449, SD = 3.423; SD is a third of the intercept).  
+
+
+The treatment effect (difference in post NSS) varies considerably between studies:  
+Sham vs untreated MCAO: mean difference = -6.677, SD = 3.497; SD is half of the effect  
+JM-20 vs untreated MCAO: mean difference = -2.126, SD = 3.553; SD is larger than the effect  
+
+
+Comparison with fixed-slope model yields a significant superiority of the random-slope model.
