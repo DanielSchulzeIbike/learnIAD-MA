@@ -113,19 +113,48 @@ if (window.hljs) {
 <div id="section-welcome" class="section level2">
 <h2>Welcome!</h2>
 <p>Welcome to our tutorial on how to run individual animal data
-meta-analysis! (We will use the abbreviation IAD-MA in the future.)</p>
+meta-analysis (IAD-MA)! (We will use the abbreviation IAD-MA in the
+future.)</p>
+<p>This tutorial’s structure: For the main part of the tutorial we will
+go through several analyses types. These analyses are also reflected in
+the tutorial’s layout on the left. We will exchange the outcome variable
+in order to illustrate the programming differences, but the general
+steps in IAD-MA always remain the same.</p>
+<p><strong>We will look at these outcomes</strong> [analysis
+type]:<br />
+- post treatment score [linear regression]<br />
+- pre-post difference [linear regression]<br />
+- mortality: yes/no [logistic regression]<br />
+- mortality: time [survival analysis: Cox regression]<br />
+- meta-regression with IAD</p>
 <p>Click the video below for the first part of the introduction.</p>
 <video width="852" height="480" controls>
 <source src="www/Welcome1.mp4" type="video/mp4">
 </video>
 </div>
+<div id="section-iad-theory" class="section level2">
+<h2>IAD: Theory</h2>
+<p>Click the video below for a presentation of basic concepts of
+IAD-MA.</p>
+<video width="852" height="480" controls>
+<source src="www/intro IAD f.mp4" type="video/mp4">
+</video>
+</div>
 <div id="section-data" class="section level2">
 <h2>Data</h2>
+<p>Content of this section:</p>
+<ol style="list-style-type: decimal">
+<li>Intro to the data example</li>
+<li>(Re)Shaping the data frame</li>
+<li>Plotting the longitudinal data (to get a feel for it)</li>
+</ol>
+<div id="section-data-example" class="section level3">
+<h3>1 Data example</h3>
 <p>Before heading into the main topic, let us introduce our working
 example. Click the video below to learn about it or read the summary
 below.</p>
 <video width="852" height="480" controls>
-<source src="www/Data1.mp4" type="video/mp4">
+<source src="www/data f.mp4" type="video/mp4">
 </video>
 <p>This data set is taken from a publication by Ramirez-Sanchez et
 al. (2024) on the efficacy of a new drug (JM-20) on treating ischemic
@@ -150,8 +179,8 @@ data-pipe="|&gt;">
 <script type="application/json" data-ui-opts="1">{"engine":"r","has_checker":false,"caption":"<span data-i18n=\"text.enginecap\" data-i18n-opts=\"{&quot;engine&quot;:&quot;R&quot;}\">R Code<\/span>"}</script>
 </div>
 </div>
-<div id="section-data-reshape" class="section level2">
-<h2>Data reshape</h2>
+<div id="section-data-reshape" class="section level3">
+<h3>2 Data reshape</h3>
 <p>For IAD-MA, data has to be present in the so-called long format.
 “Long” refers to stacking data from all studies on top of each other
 with an additional column indicating the source.</p>
@@ -182,8 +211,8 @@ data-lines="0" data-pipe="|&gt;">
 <script type="application/json" data-ui-opts="1">{"engine":"r","has_checker":false,"caption":"<span data-i18n=\"text.enginecap\" data-i18n-opts=\"{&quot;engine&quot;:&quot;R&quot;}\">R Code<\/span>"}</script>
 </div>
 </div>
-<div id="section-plotting-of-longitudinal-data" class="section level2">
-<h2>Plotting of longitudinal data</h2>
+<div id="section-plotting-of-longitudinal-data" class="section level3">
+<h3>3 Plotting of longitudinal data</h3>
 <p>Next, we would like to plot the longitudinal data we have. In ggplot
 (a common plotting tool in R), this can look like this (this code and
 the plot it is giving is merely supposed to familiarize yourself with
@@ -199,35 +228,28 @@ some ggplot):</p>
   scale_x_continuous(breaks = c(0, 1, 3, 7, 14)) +
   geom_point(aes(x = AttritionDay), alpha = 0.4, shape = 25) # add attrition as triangles</code></pre>
 <p><img src="online-script_files/figure-html/Plotting%20of%20longitudinal%20data%20-%20spaghetti%20plot-1.png" width="624" /></p>
-<p>PLot description:<br />
+<p>Plot description:<br />
 There measurements in the outcome NSS taken before stroke (0), at the
 day of stroke (1), and at day 3, 7, and 14 afterwards.<br />
 Thick lines are smoothed general trends per group.<br />
 Thin lines are individual mouse trajectories. (until their death).<br />
 Triangles mark the day of death, if a mouse died.</p>
 </div>
-<div id="section-iad-theory" class="section level2">
-<h2>IAD: Theory</h2>
-<p>Click the video below for a presentation of basic concepts of
-IAD-MA.</p>
-<video width="852" height="480" controls>
-<source src="www/Medien1.mp4" type="video/mp4">
-</video>
-<p>For the following exercises we will cycle through a repeating pattern
-of two-stage and single-stage analyses. We will exchange the outcome
-variable in order to illustrate the programming differences, but the
-general steps always remain the same.</p>
-<p><strong>We will look at these outcomes [analysis
-type]:</strong><br />
-- post neuro score [linear regression]<br />
-- pre-post difference [linear regression]<br />
-- mortality: yes/no [logistic regression]<br />
-- mortality: time [survival analysis: Cox regression]<br />
-- meta-regression with IAD</p>
 </div>
-<div id="section-post-score-two-stage-analysis-step-1"
-class="section level2">
-<h2>Post score: Two stage analysis (Step 1)</h2>
+<div id="section-intro-two-stage-analysis" class="section level2">
+<h2>Intro: Two-stage analysis</h2>
+<p>For IAD-MA, there are two main strategies: <strong>Two-stage and
+single-stage analysis</strong>.</p>
+<div id="section-two-stage-analysis" class="section level3">
+<h3>Two-stage analysis</h3>
+<p>This video serves as an introduction:</p>
+<video width="852" height="480" controls>
+<source src="www/2stage f.mp4" type="video/mp4">
+</video>
+</div>
+</div>
+<div id="section-post-score-two-stage-analysis" class="section level2">
+<h2>Post score: Two-stage analysis</h2>
 <div id="section-step-1-linear-regression-anova-type-model"
 class="section level3">
 <h3>Step 1: Linear regression (ANOVA-type model)</h3>
@@ -321,10 +343,6 @@ summary(NSSpost_4)</code></pre>
 Comparing untreated MCAO and JM-20: No significant differences but in a
 single study (Hav19).</p>
 </div>
-</div>
-<div id="section-post-score-two-stage-analysis-step-2"
-class="section level2">
-<h2>Post score: Two stage analysis (Step 2)</h2>
 <div id="section-meta-analysis-of-post-nss" class="section level3">
 <h3>Meta-analysis of post NSS</h3>
 <p>We now need to gather the results from the separate regression
@@ -380,6 +398,13 @@ forest(,
 slightly lower NSS in JM-20 group than in untreated MCAO control.
 Non-significant.</p>
 </div>
+</div>
+<div id="section-intro-single-stage-analysis" class="section level2">
+<h2>Intro: Single-stage analysis</h2>
+<p>This video serves as an introduction:</p>
+<video width="852" height="480" controls>
+<source src="www/data f.mp4" type="video/mp4">
+</video>
 </div>
 <div id="section-post-score-single-stage-analysis"
 class="section level2">
@@ -503,7 +528,7 @@ pacman::p_load(dplyr,
                ggpubr,
                learnr)
 
-setwd("S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr")
+setwd("S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA")
 
 DatIAD <- readRDS("IADdata.Rds") # load data
 
@@ -581,7 +606,7 @@ learnr:::store_exercise_cache(structure(list(label = "first_ex", global_setup = 
 "               brms,         # Bayesian (mixed) models", "               mice,         # multiple imputation", 
 "               zoo,", "               ggplot2,", "               ggborderline, # enhance borders in plots", 
 "               gtsummary, ", "               ggpubr,", "               learnr)", 
-"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr\")", 
+"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA\")", 
 "", "DatIAD <- readRDS(\"IADdata.Rds\") # load data", "", "# Reshaping data to long format (needed later for longitudinal mixed modeling):", 
 "DatIAD_long <- data.frame(stack(DatIAD[c(\"NSSPre.MCAO..BL.\", ", 
 "                                         \"NSS24h.post\",", 
@@ -648,7 +673,7 @@ learnr:::store_exercise_cache(structure(list(label = "datLong_ex", global_setup 
 "               brms,         # Bayesian (mixed) models", "               mice,         # multiple imputation", 
 "               zoo,", "               ggplot2,", "               ggborderline, # enhance borders in plots", 
 "               gtsummary, ", "               ggpubr,", "               learnr)", 
-"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr\")", 
+"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA\")", 
 "", "DatIAD <- readRDS(\"IADdata.Rds\") # load data", "", "# Reshaping data to long format (needed later for longitudinal mixed modeling):", 
 "DatIAD_long <- data.frame(stack(DatIAD[c(\"NSSPre.MCAO..BL.\", ", 
 "                                         \"NSS24h.post\",", 
@@ -715,7 +740,7 @@ learnr:::store_exercise_cache(structure(list(label = "studyName_ex", global_setu
 "               brms,         # Bayesian (mixed) models", "               mice,         # multiple imputation", 
 "               zoo,", "               ggplot2,", "               ggborderline, # enhance borders in plots", 
 "               gtsummary, ", "               ggpubr,", "               learnr)", 
-"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr\")", 
+"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA\")", 
 "", "DatIAD <- readRDS(\"IADdata.Rds\") # load data", "", "# Reshaping data to long format (needed later for longitudinal mixed modeling):", 
 "DatIAD_long <- data.frame(stack(DatIAD[c(\"NSSPre.MCAO..BL.\", ", 
 "                                         \"NSS24h.post\",", 
@@ -782,7 +807,7 @@ learnr:::store_exercise_cache(structure(list(label = "regression_ex", global_set
 "               brms,         # Bayesian (mixed) models", "               mice,         # multiple imputation", 
 "               zoo,", "               ggplot2,", "               ggborderline, # enhance borders in plots", 
 "               gtsummary, ", "               ggpubr,", "               learnr)", 
-"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr\")", 
+"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA\")", 
 "", "DatIAD <- readRDS(\"IADdata.Rds\") # load data", "", "# Reshaping data to long format (needed later for longitudinal mixed modeling):", 
 "DatIAD_long <- data.frame(stack(DatIAD[c(\"NSSPre.MCAO..BL.\", ", 
 "                                         \"NSS24h.post\",", 
@@ -858,7 +883,7 @@ learnr:::store_exercise_cache(structure(list(label = "gatherEffectsNaive", globa
 "               brms,         # Bayesian (mixed) models", "               mice,         # multiple imputation", 
 "               zoo,", "               ggplot2,", "               ggborderline, # enhance borders in plots", 
 "               gtsummary, ", "               ggpubr,", "               learnr)", 
-"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr\")", 
+"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA\")", 
 "", "DatIAD <- readRDS(\"IADdata.Rds\") # load data", "", "# Reshaping data to long format (needed later for longitudinal mixed modeling):", 
 "DatIAD_long <- data.frame(stack(DatIAD[c(\"NSSPre.MCAO..BL.\", ", 
 "                                         \"NSS24h.post\",", 
@@ -928,7 +953,7 @@ learnr:::store_exercise_cache(structure(list(label = "twoStepMA", global_setup =
 "               brms,         # Bayesian (mixed) models", "               mice,         # multiple imputation", 
 "               zoo,", "               ggplot2,", "               ggborderline, # enhance borders in plots", 
 "               gtsummary, ", "               ggpubr,", "               learnr)", 
-"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr\")", 
+"", "setwd(\"S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA\")", 
 "", "DatIAD <- readRDS(\"IADdata.Rds\") # load data", "", "# Reshaping data to long format (needed later for longitudinal mixed modeling):", 
 "DatIAD_long <- data.frame(stack(DatIAD[c(\"NSSPre.MCAO..BL.\", ", 
 "                                         \"NSS24h.post\",", 

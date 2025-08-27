@@ -14,6 +14,17 @@ date: ""
 Welcome to our tutorial on how to run individual animal data meta-analysis!
 (We will use the abbreviation IAD-MA in the future.)
 
+This tutorial's structure:
+For the main part of the tutorial we will go through several analyses types. These analyses are also reflected in the tutorial's layout on the left. We will exchange the outcome variable in order to illustrate the programming differences, but the general steps in IAD-MA always remain the same.  
+
+__We will look at these outcomes__ [analysis type]:  
+- post treatment score [linear regression]  
+- pre-post difference [linear regression]  
+- mortality: yes/no [logistic regression]  
+- mortality: time [survival analysis: Cox regression]  
+- meta-regression with IAD
+
+
 Click the video below for the first part of the introduction.
 
 <video width="852" height="480" controls>
@@ -39,7 +50,7 @@ pacman::p_load(dplyr,
                ggpubr,
                learnr)
 
-setwd("S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr")
+setwd("S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA")
 
 DatIAD <- readRDS("IADdata.Rds") # load data
 
@@ -81,12 +92,33 @@ mean_post_ma <- rma(yi = mean_post,
                     sei = se_mean_post)
 ```
 
+
+
+## IAD: Theory
+
+Click the video below for a presentation of basic concepts of IAD-MA.
+
+<video width="852" height="480" controls>
+  <source src="www/intro IAD f.mp4" type="video/mp4">
+</video>
+
+
+
 ## Data
+
+Content of this section:
+
+1. Intro to the data example
+2. (Re)Shaping the data frame
+3. Plotting the longitudinal data (to get a feel for it)
+
+
+### 1 Data example
 
 Before heading into the main topic, let us introduce our working example. Click the video below to learn about it or read the summary below.
 
 <video width="852" height="480" controls>
-  <source src="www/Data1.mp4" type="video/mp4">
+  <source src="www/data f.mp4" type="video/mp4">
 </video>
 
 This data set is taken from a publication by Ramirez-Sanchez et al. (2024) on the efficacy of a new drug (JM-20) on treating ischemic stroke. The data comprises 4 experiments in different locations and with different species, age groups, and comorbidity. Three groups are part of each experiment: Sham (no actual stroke applied), MCAO (control, with stroke but no treatment), JM20 (stroke and treatment). Outcome was the Neuroscore (NSS) measuring motor skill impairment.  
@@ -109,7 +141,7 @@ head()
 ```
 
 
-## Data reshape
+### 2 Data reshape
 
 For IAD-MA, data has to be present in the so-called long format. "Long" refers to stacking data from all studies on top of each other with an additional column indicating the source.
 
@@ -145,7 +177,7 @@ head()
 
 
 
-## Plotting of longitudinal data
+### 3 Plotting of longitudinal data
 
 Next, we would like to plot the longitudinal data we have. In ggplot (a common plotting tool in R), this can look like this (this code and the plot it is giving is merely supposed to familiarize yourself with the data. You don't have to understand the code unless you want to learn some ggplot):
 
@@ -162,34 +194,30 @@ ggplot(data = DatIAD_long, aes(x = day,
   geom_point(aes(x = AttritionDay), alpha = 0.4, shape = 25) # add attrition as triangles
 ```
 
-PLot description:  
+Plot description:  
 There measurements in the outcome NSS taken before stroke (0), at the day of stroke (1), and at day 3, 7, and 14 afterwards.  
 Thick lines are smoothed general trends per group.  
 Thin lines are individual mouse trajectories. (until their death).  
 Triangles mark the day of death, if a mouse died.
 
 
+## Intro: Two-stage analysis
 
-## IAD: Theory
+For IAD-MA, there are two main strategies: __Two-stage and single-stage analysis__.
 
-Click the video below for a presentation of basic concepts of IAD-MA.
+
+
+### Two-stage analysis
+
+This video serves as an introduction:
 
 <video width="852" height="480" controls>
-  <source src="www/Medien1.mp4" type="video/mp4">
+  <source src="www/2stage f.mp4" type="video/mp4">
 </video>
 
-For the following exercises we will cycle through a repeating pattern of two-stage and single-stage analyses. We will exchange the outcome variable in order to illustrate the programming differences, but the general steps always remain the same.  
-
-__We will look at these outcomes__ [analysis type]:  
-- post neuro score [linear regression]  
-- pre-post difference [linear regression]  
-- mortality: yes/no [logistic regression]  
-- mortality: time [survival analysis: Cox regression]  
-- meta-regression with IAD
 
 
-
-## Post score: Two stage analysis (Step 1)
+## Post score: Two-stage analysis
 
 ### Step 1: Linear regression (ANOVA-type model)
 
@@ -258,8 +286,6 @@ Comparing untreated MCAO and JM-20: No significant differences but in a single s
 
 
 
-## Post score: Two stage analysis (Step 2)
-
 ### Meta-analysis of post NSS
 
 We now need to gather the results from the separate regression models, ie, their coefficients. We can simply create a new object in R that contains these results.
@@ -310,6 +336,17 @@ forest(,
 ```
 
 Aggregated effect mean difference in NSS at day 7: -1.80, ie. slightly lower NSS in JM-20 group than in untreated MCAO control. Non-significant.
+
+
+
+
+## Intro: Single-stage analysis
+
+This video serves as an introduction:
+
+<video width="852" height="480" controls>
+  <source src="www/data f.mp4" type="video/mp4">
+</video>
 
 
 
