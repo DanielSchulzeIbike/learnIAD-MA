@@ -434,6 +434,7 @@ Comparing untreated MCAO and JM-20: No significant difference, but JM-20 has sli
 _**Exercise:**_  
 Run logistic regressions for the other 3 studies by extending the code. Summarize the results for yourself like we did above.
 
+<<<<<<< HEAD
 ```{r logreg_ex, exercise=TRUE}
 
 mortality_2 <- glm()
@@ -449,6 +450,7 @@ summary(mortality_4)
 tbl_regression()
 
 ```
+
 
 ```{r logreg_ex-solution}
 
@@ -482,7 +484,6 @@ Comparing untreated MCAO and JM-20: No significant differences anywhere, but var
 ## Step 2: Meta-analysis of mortality
 
 
-
 __*Exercise:*__  
 
 Create a data set with logOR and standard error estimates from the models, just like we did above:
@@ -502,7 +503,7 @@ seOR <- c(summary(...)$coefficients[2,2],
 
 ```{r gather_odds_ratios-solution}
 
-logOR <- c(summary(mortality_1)$coefficients[2,1],
+logOR <- c(summary(mortality_1)$coefficients[2,1], 
          summary(mortality_2)$coefficients[2,1],
          summary(mortality_3)$coefficients[2,1],
          summary(mortality_4)$coefficients[2,1])
@@ -530,7 +531,7 @@ forest(,
 
 ```
 
-```{r MortalityMA-solution}
+```{r Mortality MA, echo=TRUE}
 
 mortality_ma <- rma(yi = logOR,
                     sei = seOR)
@@ -551,8 +552,8 @@ __Logistic regression for all studies, ignoring study variable__
 
 ```{r Mortality log reg for all studies, echo=TRUE}
 
-
 #!
+
 mortality_all <- glm(survival ~ treatment, 
                      data = DatIAD, 
                      family = binomial)
