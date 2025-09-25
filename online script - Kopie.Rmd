@@ -14,17 +14,6 @@ date: ""
 Welcome to our tutorial on how to run individual animal data meta-analysis!
 (We will use the abbreviation IAD-MA in the future.)
 
-This tutorial's structure:
-For the main part of the tutorial we will go through several analyses types. These analyses are also reflected in the tutorial's layout on the left. We will exchange the outcome variable in order to illustrate the programming differences, but the general steps in IAD-MA always remain the same.  
-
-__We will look at these outcomes__ [analysis type]:  
-- post treatment score [linear regression]  
-- pre-post difference [linear regression]  ? XX
-- mortality: yes/no [logistic regression]  
-- mortality: time [survival analysis: Cox regression]  
-- meta-regression with IAD
-
-
 Click the video below for the first part of the introduction.
 
 <video width="852" height="480" controls>
@@ -50,7 +39,7 @@ pacman::p_load(dplyr,
                ggpubr,
                learnr)
 
-setwd("S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr/learnIAD-MA")
+setwd("S:/C01/iBikE/Studien/BIH-COReS/Teaching Advanced Course/Web Course/learnr")
 
 DatIAD <- readRDS("IADdata.Rds") # load data
 
@@ -92,33 +81,12 @@ mean_post_ma <- rma(yi = mean_post,
                     sei = se_mean_post)
 ```
 
-
-
-## IAD: Theory
-
-Click the video below for a presentation of basic concepts of IAD-MA.
-
-<video width="852" height="480" controls>
-  <source src="www/intro IAD f.mp4" type="video/mp4">
-</video>
-
-
-
 ## Data
-
-Content of this section:
-
-1. Intro to the data example
-2. (Re)Shaping the data frame
-3. Plotting the longitudinal data (to get a feel for it)
-
-
-### 1 Data example
 
 Before heading into the main topic, let us introduce our working example. Click the video below to learn about it or read the summary below.
 
 <video width="852" height="480" controls>
-  <source src="www/data f.mp4" type="video/mp4">
+  <source src="www/Data1.mp4" type="video/mp4">
 </video>
 
 This data set is taken from a publication by Ramirez-Sanchez et al. (2024) on the efficacy of a new drug (JM-20) on treating ischemic stroke. The data comprises 4 experiments in different locations and with different species, age groups, and comorbidity. Three groups are part of each experiment: Sham (no actual stroke applied), MCAO (control, with stroke but no treatment), JM20 (stroke and treatment). Outcome was the Neuroscore (NSS) measuring motor skill impairment.  
@@ -141,7 +109,7 @@ head()
 ```
 
 
-### 2 Data reshape
+## Data reshape
 
 For IAD-MA, data has to be present in the so-called long format. "Long" refers to stacking data from all studies on top of each other with an additional column indicating the source.
 
@@ -177,7 +145,7 @@ head()
 
 
 
-### 3 Plotting of longitudinal data
+## Plotting of longitudinal data
 
 Next, we would like to plot the longitudinal data we have. In ggplot (a common plotting tool in R), this can look like this (this code and the plot it is giving is merely supposed to familiarize yourself with the data. You don't have to understand the code unless you want to learn some ggplot):
 
@@ -194,30 +162,34 @@ ggplot(data = DatIAD_long, aes(x = day,
   geom_point(aes(x = AttritionDay), alpha = 0.4, shape = 25) # add attrition as triangles
 ```
 
-Plot description:  
+PLot description:  
 There measurements in the outcome NSS taken before stroke (0), at the day of stroke (1), and at day 3, 7, and 14 afterwards.  
 Thick lines are smoothed general trends per group.  
 Thin lines are individual mouse trajectories. (until their death).  
 Triangles mark the day of death, if a mouse died.
 
 
-## Intro: Two-stage analysis
 
-For IAD-MA, there are two main strategies: __Two-stage and single-stage analysis__.
+## IAD: Theory
 
-
-
-### Two-stage analysis
-
-This video serves as an introduction:
+Click the video below for a presentation of basic concepts of IAD-MA.
 
 <video width="852" height="480" controls>
-  <source src="www/2stage f.mp4" type="video/mp4">
+  <source src="www/Medien1.mp4" type="video/mp4">
 </video>
 
+For the following exercises we will cycle through a repeating pattern of two-stage and single-stage analyses. We will exchange the outcome variable in order to illustrate the programming differences, but the general steps always remain the same.  
+
+__We will look at these outcomes__ [analysis type]:  
+- post neuro score [linear regression]  
+- pre-post difference [linear regression]  
+- mortality: yes/no [logistic regression]  
+- mortality: time [survival analysis: Cox regression]  
+- meta-regression with IAD
 
 
-## Post score: Two-stage analysis
+
+## Post score: Two stage analysis (Step 1)
 
 ### Step 1: Linear regression (ANOVA-type model)
 
@@ -286,6 +258,8 @@ Comparing untreated MCAO and JM-20: No significant differences but in a single s
 
 
 
+## Post score: Two stage analysis (Step 2)
+
 ### Meta-analysis of post NSS
 
 We now need to gather the results from the separate regression models, ie, their coefficients. We can simply create a new object in R that contains these results.
@@ -339,17 +313,6 @@ Aggregated effect mean difference in NSS at day 7: -1.80, ie. slightly lower NSS
 
 
 
-
-## Intro: Single-stage analysis
-
-This video serves as an introduction:
-
-<video width="852" height="480" controls>
-  <source src="www/data f.mp4" type="video/mp4">
-</video>
-
-
-
 ## Post score: Single stage analysis
 
 For a single stage analysis, we need to run a mixed model. ###!
@@ -377,7 +340,6 @@ NSSpost_lmm2 <- lmer(NSS7d.post ~ treatment + (treatment|Study),
 summary(NSSpost_lmm2)
 anova(NSSpost_lmm, NSSpost_lmm2)
 ```
-
 Aggregated effect mean difference in NSS at day 7: -2.13, ie. slightly lower NSS in JM-20 group than in untreated MCAO control. Non-significant.  
 The intercept (mean post NSS in untreated MCAO) varies somewhat between studies (intercept = 10.449, SD = 3.423; SD is a third of the intercept).  
 
@@ -388,181 +350,3 @@ JM-20 vs untreated MCAO: mean difference = -2.126, SD = 3.553; SD is larger than
 
 
 Comparison with fixed-slope model yields a significant superiority of the random-slope model.
-
-
-
-
-# Mortality (binary)
-
-This video serves as an introduction: XX
-
-<video width="852" height="480" controls>
-  <source src="www/2stage f.mp4" type="video/mp4">
-</video>
-
-
-## Two stage analysis
-
-### Step 1: Logistic regression
-
-A logistic regression is also called "generalized linear model", thus glm in R, with a binomial logit link to fit the binary outcome.
-
-Two things change compared to linear regression:
-
-- we need to call glm() instead of lm(), and we have to specify the link with "family = binomial"
-- The output represents the treatment effect as logit-transformed odds ratios. We have transform it back to get a better grasp on the effect's meaning
-
-```{r Logistic regression model, echo=TRUE, message=FALSE, warning=FALSE}
-
-# Study 1
-mortality_1 <- glm(survival ~ treatment, 
-                   data = DatIAD[DatIAD$Study == "Berlin19", ], 
-                   family = binomial)
-summary(mortality_1)
-
-# a nice output table with ORs
-tbl_regression(mortality_1,
-               exponentiate = T) # calculates ORs
-
-```
-
-Results:
-Comparing untreated MCAO and sham: Significantly higher odds of dying for sham (14.8 times of MCAO group, p = .013).  
-Comparing untreated MCAO and JM-20: No significant difference, but JM-20 has slightly hogher odds of dying (1.27 times of MCAO, p = .70).
-
-
-_**Exercise:**_  
-Run logistic regressions for the other 3 studies by extending the code. Summarize the results for yourself like we did above.
-
-```{r logreg_ex-solution, exercise=TRUE}
-
-mortality_2 <- glm()
-summary(mortality_2)
-tbl_regression() 
-
-mortality_3 <- glm()
-summary(mortality_3)
-tbl_regression()
-
-mortality_4 <- glm()
-summary(mortality_4)
-tbl_regression()
-
-```
-
-```{r logreg_ex-solution, exercise=TRUE}
-
-mortality_2 <- glm(survival ~ treatment, 
-                   data = DatIAD[DatIAD$Study == "Hav19", ], 
-                   family = binomial)
-summary(mortality_2)
-tbl_regression(mortality_2,
-               exponentiate = T)
-
-mortality_3 <- glm(survival ~ treatment, 
-                   data = DatIAD[DatIAD$Study == "Hav20AGED", ], 
-                   family = binomial)
-summary(mortality_3)
-tbl_regression(mortality_3,
-               exponentiate = T)
-
-mortality_4 <- glm(survival ~ treatment, 
-                   data = DatIAD[DatIAD$Study == "Hav20STZ", ], 
-                   family = binomial)
-summary(mortality_4)
-tbl_regression(mortality_4,
-               exponentiate = T)
-
-```
-
-Comparing untreated MCAO and sham: Significantly higher survival odds for sham in all studies but one (Hav20STZ). Somewhat inconsistent pattern.  
-Comparing untreated MCAO and JM-20: No significant differences anywhere, but varying odds ratios.
-
-
-## Step 2: Meta-analysis of mortality
-
-Create data set with logOR and standard error estimates from the models above
-
-```{r gather odds ratios, echo=TRUE, message=FALSE, warning=FALSE}
-
-#or, more efficient, no copy paste needed:
-logOR <- c(summary(mortality_1)$coefficients[2,1], # extract specific estimate: logOR of JM20 vs MCAO-control
-         summary(mortality_2)$coefficients[2,1],
-         summary(mortality_3)$coefficients[2,1],
-         summary(mortality_4)$coefficients[2,1])
-seOR <- c(summary(mortality_1)$coefficients[2,2],
-       summary(mortality_2)$coefficients[2,2],
-       summary(mortality_3)$coefficients[2,2],
-       summary(mortality_4)$coefficients[2,2])
-
-```
-
-__Run meta-analysis__
-
-```{r Mortality MA, echo=TRUE}
-
-mortality_ma <- rma(yi = logOR,
-                    sei = seOR)
-summary(mortality_ma)
-
-forest(mortality_ma,
-       slab = c( "Berlin19", "Hav19", "Hav20AGED", "Hav20STZ"),
-       xlab = "log(OR)")
-
-```
-
-Aggregated effect of logOR = 0.35, ie. OR = 1.42: Odds of survival are 42% higher in JM-20 group than in untreated MCAO control. Non-significant.
-
-
-## Naive Analysis (DON'T DO!)
-
-__Logistic regression for all studies, ignoring study variable__
-
-```{r Mortality log reg for all studies, echo=TRUE}
-
-mortality_all <- glm(survival ~ treatment, 
-                     data = DatIAD, 
-                     family = binomial)
-summary(mortality_all)
-tbl_regression(mortality_all,
-               exponentiate = T)  %>%
-  modify_header(label= "**Naive log reg**")
-
-```
-Overall effect of logOR = 0.28, ie. OR = 1.33: Odds of survival are 33% higher in JM-20 group than in untreated MCAO control. Non-significant.
-
-
-## Single stage analysis
-
-__Logistic regression as generalized mixed effect model__
-
-```{r Mortality mixed effect model, echo=TRUE}
-
-mortality_glmm <- glmer(survival ~ treatment + (1|Study), 
-                        data = DatIAD, 
-                        family = binomial)
-summary(mortality_glmm)
-tbl_regression(mortality_glmm,
-               exponentiate = T) %>%
-  modify_header(label= "**Log Mixed Model**")
-
-```
-Overall effect of logOR = 0.34, ie. OR = 1.40: Odds of survival are 40% higher in JM-20 group than in untreated MCAO control. Non-significant.  
-The intercept (odds of survival in untreated MCAO) varies substantially between studies: intercept = -0.6267, SD = 0.7675. (SD is higher than |effect|)  
-
-
-```{r Mortality mixed effect model with cage, echo=TRUE}
-
-mortality_glmm_cage <- glmer(survival ~ treatment + (1|Study / Cage), 
-                        data = DatIAD, 
-                        family = binomial)
-summary(mortality_glmm_cage)
-tbl_regression(mortality_glmm_cage,
-               exponentiate = T) %>%
-  modify_header(label= "**Log Mixed Model**")
-
-```
-Overall effect of logOR = 0.51, ie. OR = 1.67: Odds of survival are 67% higher in JM-20 group than in untreated MCAO control. Non-significant.  
-The intercept (odds of survival in untreated MCAO) varies substantially between studies (intercept = -0.8113, SD = 0.8558; SD is as high as the |effect|),  
-and between cages (intercept = -0.8113, SD = 1.1151; SD is higher than |effect|).
-
