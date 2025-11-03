@@ -28,7 +28,7 @@ __We will look at these outcomes__ [analysis type]:
 Click the video below for the first part of the introduction.
 
 <video width="852" height="480" controls>
-  <source src="www/Welcome1.mp4" type="video/mp4">
+  <source src="www/Welcome2.mp4" type="video/mp4">
 </video>
 
 
@@ -99,7 +99,7 @@ mean_post_ma <- rma(yi = mean_post,
 Click the video below for a presentation of basic concepts of IAD-MA.
 
 <video width="852" height="480" controls>
-  <source src="www/intro IAD f.mp4" type="video/mp4">
+  <source src="www/intro IAD f2.mp4" type="video/mp4">
 </video>
 
 
@@ -118,7 +118,7 @@ Content of this section:
 Before heading into the main topic, let us introduce our working example. Click the video below to learn about it or read the summary below.
 
 <video width="852" height="480" controls>
-  <source src="www/data f.mp4" type="video/mp4">
+  <source src="www/data f2.mp4" type="video/mp4">
 </video>
 
 This data set is taken from a publication by Ramirez-Sanchez et al. (2024) on the efficacy of a new drug (JM-20) on treating ischemic stroke. The data comprises 4 experiments in different locations and with different species, age groups, and comorbidity. Three groups are part of each experiment: Sham (no actual stroke applied), MCAO (control, with stroke but no treatment), JM20 (stroke and treatment). Outcome was the Neuroscore (NSS) measuring motor skill impairment.  
@@ -212,7 +212,7 @@ For IAD-MA, there are two main strategies: __Two-stage and single-stage analysis
 This video serves as an introduction:
 
 <video width="852" height="480" controls>
-  <source src="www/2stage f.mp4" type="video/mp4">
+  <source src="www/2stage f2.mp4" type="video/mp4">
 </video>
 
 
@@ -397,7 +397,7 @@ Comparison with fixed-slope model yields a significant superiority of the random
 This video serves as an introduction to odds ratios: xx explain logOR
 
 <video width="852" height="480" controls>
-  <source src="www/2stage f.mp4" type="video/mp4">
+  <source src="www/2stage f2.mp4" type="video/mp4">
 </video>
 
 
