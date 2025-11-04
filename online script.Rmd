@@ -345,7 +345,7 @@ Aggregated effect mean difference in NSS at day 7: -1.80, ie. slightly lower NSS
 This video serves as an introduction:
 
 <video width="852" height="480" controls>
-  <source src="www/data f.mp4" type="video/mp4">
+  <source src="www/1stage 3.mp4" type="video/mp4">
 </video>
 
 
@@ -397,7 +397,7 @@ Comparison with fixed-slope model yields a significant superiority of the random
 This video serves as an introduction to odds ratios: xx explain logOR
 
 <video width="852" height="480" controls>
-  <source src="www/2stage f2.mp4" type="video/mp4">
+  <source src="www/log reg mixed f.mp4" type="video/mp4">
 </video>
 
 
@@ -434,7 +434,6 @@ Comparing untreated MCAO and JM-20: No significant difference, but JM-20 has sli
 _**Exercise:**_  
 Run logistic regressions for the other 3 studies by extending the code. Summarize the results for yourself like we did above.
 
-<<<<<<< HEAD
 ```{r logreg_ex, exercise=TRUE}
 
 mortality_2 <- glm()
