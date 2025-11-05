@@ -17,18 +17,23 @@ Welcome to our tutorial on how to run individual animal data meta-analysis!
 This tutorial's structure:
 For the main part of the tutorial we will go through several analyses types. These analyses are also reflected in the tutorial's layout on the left. We will exchange the outcome variable in order to illustrate the programming differences, but the general steps in IAD-MA always remain the same.  
 
-__We will look at these outcomes__ [analysis type]:  
-- post treatment score [linear regression]  
-- pre-post difference [linear regression]  ? XX
-- mortality: yes/no [logistic regression]  
-- mortality: time [survival analysis: Cox regression]  
-- meta-regression with IAD
-
 
 Click the video below for the first part of the introduction.
 
-<video width="852" height="480" controls>
+<video width="640" height="480" controls>
   <source src="www/Welcome2.mp4" type="video/mp4">
+</video>
+
+
+__We will look at these outcomes__ [analysis type]:  
+- post treatment score [linear regression]  
+- mortality: yes/no [logistic regression]  
+- meta-regression with IAD
+
+If you are in the need for some stats basics on regression and mixed models, here is a stats introduction.
+
+<video width="1280" height="720" controls>
+  <source src="www/stats intro.mp4" type="video/mp4">
 </video>
 
 
@@ -90,6 +95,26 @@ se_mean_post <- c(summary(NSSpost_1)$coefficients[2,2],
                   summary(NSSpost_4)$coefficients[2,2])
 mean_post_ma <- rma(yi = mean_post,
                     sei = se_mean_post)
+mortality_1 <- glm(survival ~ treatment, 
+                   data = DatIAD[DatIAD$Study == "Berlin19", ], 
+                   family = binomial)
+mortality_2 <- glm(survival ~ treatment, 
+                   data = DatIAD[DatIAD$Study == "Hav19", ], 
+                   family = binomial)
+mortality_3 <- glm(survival ~ treatment, 
+                   data = DatIAD[DatIAD$Study == "Hav20AGED", ], 
+                   family = binomial)
+mortality_4 <- glm(survival ~ treatment, 
+                   data = DatIAD[DatIAD$Study == "Hav20STZ", ], 
+                   family = binomial)
+logOR <- c(summary(mortality_1)$coefficients[2,1], 
+         summary(mortality_2)$coefficients[2,1],
+         summary(mortality_3)$coefficients[2,1],
+         summary(mortality_4)$coefficients[2,1])
+seOR <- c(summary(mortality_1)$coefficients[2,2],
+       summary(mortality_2)$coefficients[2,2],
+       summary(mortality_3)$coefficients[2,2],
+       summary(mortality_4)$coefficients[2,2])
 ```
 
 
@@ -98,7 +123,7 @@ mean_post_ma <- rma(yi = mean_post,
 
 Click the video below for a presentation of basic concepts of IAD-MA.
 
-<video width="852" height="480" controls>
+<video width="1280" height="720" controls>
   <source src="www/intro IAD f2.mp4" type="video/mp4">
 </video>
 
@@ -117,7 +142,7 @@ Content of this section:
 
 Before heading into the main topic, let us introduce our working example. Click the video below to learn about it or read the summary below.
 
-<video width="852" height="480" controls>
+<video width="1280" height="720" controls>
   <source src="www/data f2.mp4" type="video/mp4">
 </video>
 
@@ -211,7 +236,7 @@ For IAD-MA, there are two main strategies: __Two-stage and single-stage analysis
 
 This video serves as an introduction:
 
-<video width="852" height="480" controls>
+<video width="1280" height="720" controls>
   <source src="www/2stage f2.mp4" type="video/mp4">
 </video>
 
@@ -344,7 +369,7 @@ Aggregated effect mean difference in NSS at day 7: -1.80, ie. slightly lower NSS
 
 This video serves as an introduction:
 
-<video width="852" height="480" controls>
+<video width="1280" height="720" controls>
   <source src="www/1stage 3.mp4" type="video/mp4">
 </video>
 
@@ -392,16 +417,16 @@ Comparison with fixed-slope model yields a significant superiority of the random
 
 
 
-# Mortality (binary)
+## Intro: Binary outcomes (mortality)
 
 This video serves as an introduction to odds ratios: xx explain logOR
 
-<video width="852" height="480" controls>
+<video width="1280" height="720" controls>
   <source src="www/log reg mixed f.mp4" type="video/mp4">
 </video>
 
 
-## Two stage analysis
+## Mortality: Two-stage analysis
 
 ### Step 1: Logistic regression
 
@@ -480,14 +505,42 @@ Comparing untreated MCAO and sham: Significantly higher survival odds for sham i
 Comparing untreated MCAO and JM-20: No significant differences anywhere, but varying odds ratios.
 
 
-## Step 2: Meta-analysis of mortality
+
+```{r logreg_ex2, echo=F}
+
+mortality_2 <- glm(survival ~ treatment, 
+                   data = DatIAD[DatIAD$Study == "Hav19", ], 
+                   family = binomial)
+summary(mortality_2)
+tbl_regression(mortality_2,
+               exponentiate = T)
+
+mortality_3 <- glm(survival ~ treatment, 
+                   data = DatIAD[DatIAD$Study == "Hav20AGED", ], 
+                   family = binomial)
+summary(mortality_3)
+tbl_regression(mortality_3,
+               exponentiate = T)
+
+mortality_4 <- glm(survival ~ treatment, 
+                   data = DatIAD[DatIAD$Study == "Hav20STZ", ], 
+                   family = binomial)
+summary(mortality_4)
+tbl_regression(mortality_4,
+               exponentiate = T)
+
+```
+
+
+
+### Step 2: Meta-analysis of mortality
 
 
 __*Exercise:*__  
 
 Create a data set with logOR and standard error estimates from the models, just like we did above:
 
-```{r gather odds ratios, exercise=TRUE}
+```{r gather_odds_ratios, exercise=TRUE}
 
 logOR <- c(summary(...)$coefficients[2,1],
          summary(...)$coefficients[2,1],
@@ -518,7 +571,7 @@ __*Exercise:*__
 
 You are now ready to conduct the second step, the meta-analysis itself. metafor uses a simple command called rma(), which takes the listed results from above. It calls the effects "y" and theLook at the output of this analysis, and forward to a (default) forest plot.
 
-```{r MortalityMA-solution, exercise=TRUE}
+```{r MortalityMA, exercise=TRUE}
 
 mortality_ma <- rma(yi = ,
                     sei = )
@@ -530,7 +583,7 @@ forest(,
 
 ```
 
-```{r Mortality MA, echo=TRUE}
+```{r MortalityMA-solution}
 
 mortality_ma <- rma(yi = logOR,
                     sei = seOR)
@@ -545,27 +598,8 @@ forest(mortality_ma,
 Aggregated effect of logOR = 0.35, ie. OR = 1.42: Odds of survival are 42% higher in JM-20 group than in untreated MCAO control. Non-significant.
 
 
-## Naive Analysis (DON'T DO!)
 
-__Logistic regression for all studies, ignoring study variable__
-
-```{r Mortality log reg for all studies, echo=TRUE}
-
-#!
-
-mortality_all <- glm(survival ~ treatment, 
-                     data = DatIAD, 
-                     family = binomial)
-summary(mortality_all)
-tbl_regression(mortality_all,
-               exponentiate = T)  %>%
-  modify_header(label= "**Naive log reg**")
-
-```
-Overall effect of logOR = 0.28, ie. OR = 1.33: Odds of survival are 33% higher in JM-20 group than in untreated MCAO control. Non-significant.
-
-
-## Single stage analysis
+## Mortality: Single-stage analysis
 
 __Logistic regression as generalized mixed effect model__
 
@@ -580,6 +614,7 @@ tbl_regression(mortality_glmm,
   modify_header(label= "**Log Mixed Model**")
 
 ```
+
 Overall effect of logOR = 0.34, ie. OR = 1.40: Odds of survival are 40% higher in JM-20 group than in untreated MCAO control. Non-significant.  
 The intercept (odds of survival in untreated MCAO) varies substantially between studies: intercept = -0.6267, SD = 0.7675. (SD is higher than |effect|)  
 
@@ -599,3 +634,34 @@ Overall effect of logOR = 0.51, ie. OR = 1.67: Odds of survival are 67% higher i
 The intercept (odds of survival in untreated MCAO) varies substantially between studies (intercept = -0.8113, SD = 0.8558; SD is as high as the |effect|),  
 and between cages (intercept = -0.8113, SD = 1.1151; SD is higher than |effect|).
 
+
+
+## Meta-regression
+
+Capabilities of two-stage and single-stage analysis differ:  
+Two-stage can only look at effect modifiers on a study level, single-stage also on individual level. Here, we will illustrate a single stage analysis.
+
+For meta-regression, we need to enhance the mixed model with moderators, ie., interaction effects.
+For separating within-study interactions and across-study interactions, we need to specify age in two flavours: group mean centered for each study, and the study-wise age means as well.
+Fo this example, the age variable is no real data but was simulated.
+
+```{r Linear Mixed effect model for all studies - diff NSS with interaction, echo=TRUE}
+
+# group mean center age (by study)
+DatIAD <- DatIAD %>%
+    group_by(Study) %>% 
+    mutate(age_gmc = age  - mean(age))
+
+# store study age means
+DatIAD <- DatIAD %>%
+    group_by(Study) %>% 
+    mutate(age_gm = mean(age))
+
+NSSdiff_age <- lmer(NSS_diff ~ treatment*age_gmc + treatment*age_gm + (1|Study), 
+                    data = DatIAD)
+
+summary(NSSdiff_age)
+tbl_regression(NSSdiff_age)
+```
+Only one significant interaction: (MCAO-Sham) by age (group mean centered). This a within study interaction, ie. age is no effect modifier in a meta-analytical sense here.  
+Interpretation: The improvement in NSS is greater in MCAO than Sham, and even stronger so in older animals.
